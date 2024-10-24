@@ -4,7 +4,9 @@ from sqlalchemy.orm import sessionmaker
 
 from ..models.user import Base
 
-engine = create_engine("sqlite://", echo=True)
+db_path = "Users/mac/Desktop/Projects/JODNA/school_management/School_management_sys/api/school_management.db"
+
+engine = create_engine(f"sqlite:////{db_path}", echo=True)
 Base.metadata.create_all(engine)
 
 DBSession = sessionmaker(bind=engine)

@@ -1,15 +1,4 @@
-from string import punctuation
-from fastapi import HTTPException
-
-from pydantic import BaseModel, EmailStr, field_validator
-
-
-class Base(BaseModel):
-    email: EmailStr
-    first_name: str
-    last_name: str
-    middle_name: str
-    department: str
+from .base import Base
 
 
 class StudentIn(Base):
@@ -60,15 +49,3 @@ class StaffIn(Base):
 
 class StudentUpdateFormIn(Base):
     level: str
-
-
-class StudentOut(Base):
-    _id: int
-    role: str
-    admission_number: str
-
-
-class StaffOut(Base):
-    _id: int
-    role: str
-    course: str
