@@ -5,7 +5,7 @@ from ..controllers.admin import StaffManager
 
 
 # This is a router that will be used to bind this route to the app in the app.py file
-router = APIRouter(prefix='/api/manage', tags=["Admin Panel"])
+router = APIRouter(prefix='/api', tags=["Admin Panel"])
 
 
 @router.get("/")
