@@ -1,11 +1,11 @@
 from fastapi import FastAPI, status, APIRouter
 
-from .routes import admins, staff, students
+from .routes import staff, user
 
 
 app = FastAPI()
 
-app.include_router(admins.router)
+# app.include_router(admins.router)
 app.include_router(staff.router)
 # app.include_router(students.router)
 

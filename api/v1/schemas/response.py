@@ -11,3 +11,5 @@ class StaffOut(Base):
     _id: int
     role: str
     course: str
+
+

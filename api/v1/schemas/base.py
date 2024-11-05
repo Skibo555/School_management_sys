@@ -3,8 +3,8 @@ from pydantic import BaseModel, EmailStr
 
 class Base(BaseModel):
     email: EmailStr
-    first_name: str
-    last_name: str
-    middle_name: str
+    firstName: str
+    lastName: str
+    middleName: str
     department: str
 
