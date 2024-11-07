@@ -1,13 +1,14 @@
 from fastapi import FastAPI, status, APIRouter
 
-from .routes import staff, user
+from .routes import user, course, auth, admin
 
 
 app = FastAPI()
 
-# app.include_router(admins.router)
-app.include_router(staff.router)
-# app.include_router(students.router)
+app.include_router(user.router)
+app.include_router(course.router)
+app.include_router(auth.router)
+app.include_router(admin.router)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)

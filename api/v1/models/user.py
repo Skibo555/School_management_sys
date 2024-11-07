@@ -1,11 +1,9 @@
-from typing import Optional
 from datetime import datetime
+from typing import Optional, ClassVar
+from odmantic import Model, Reference, Field
+from pydantic import EmailStr, HttpUrl, ConfigDict
 
-from odmantic import Model, Field
-from pydantic import EmailStr
-from pydantic import HttpUrl
-
-from .enums import StudentStatus, Status, Roles
+from .enums import StudentStatus, Roles
 
 
 class Education(Model):
@@ -14,6 +12,8 @@ class Education(Model):
     startDate: str
     endDate: str
     city: str
+
+    model_config: ClassVar[ConfigDict] = ConfigDict(collection="education")
 
 
 class User(Model):
@@ -29,7 +29,7 @@ class User(Model):
     dateOfBirth: str
     placeOfBirth: str
 
-    education: Education
+    education: Education = Reference()
 
     status: str = Field(default=StudentStatus.active.name)
     createdAt: datetime = Field(default_factory=datetime.utcnow)
@@ -45,26 +45,24 @@ class User(Model):
     about: Optional[str] = None
     expertise: Optional[str] = None
 
-    model_config = {
-        "collection": "users"
-    }
+    model_config: ClassVar[ConfigDict] = ConfigDict(collection="users")
 
 
 class Position(Model):
-    user: User
+    user: User = Reference()
     class_: str
     role: str
     course: str
 
 
-class Event(Model):
-    date: str
-    title: str
-    course: Optional[str] = None
-    class_: Optional[str] = None
-    startTime: int
-    endTime: int
-    status: Field(default=Status.normal.name)
+# class Event(Model):
+#     date: str
+#     title: str
+#     course: Optional[str] = None
+#     class_: Optional[str] = None
+#     startTime: int
+#     endTime: int
+#     status: Field(default=Status.normal.name)
 
 # from sqlalchemy import String, Enum, TIMESTAMP, BOOLEAN, Date, Integer, ForeignKey, Text
 # from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship

@@ -3,12 +3,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from odmantic import AIOEngine
 
 client = AsyncIOMotorClient("mongodb://localhost:27017/")
-engine = AIOEngine(client=client, database="example_db")
+engine = AIOEngine(client=client, database="example2_db")
 
 
 async def get_db():
-    db = engine
-    yield db
+    yield engine
 
 
 # from sqlalchemy import create_engine

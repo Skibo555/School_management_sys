@@ -16,7 +16,7 @@ class Level(Enum):
     level4 = 400
 
 
-class Status(Enum):
+class CourseStatus(Enum):
     withdrawn = "withdrawn"
     normal = "normal"
     suspended = "suspended"

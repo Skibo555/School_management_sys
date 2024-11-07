@@ -1,58 +1,81 @@
+from bson import ObjectId
+
 from fastapi import HTTPException, status
 
-from ..models.courses import Course
-from ..database.database import get_db
-from ..schemas.requests import CourseUpdateForm
+from ..models.courses import Course, CourseStatus
+from ..database.database import engine
 
 
 class CourseManager:
     @staticmethod
     async def create_course(course_info, user_id):
-        db = get_db()
-        course_info["course_owner_id"] = user_id
-        new_course = Course(**course_info)
-        return await db.save(new_course)
+        try:
+            ObjectId(user_id)
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid course ID format")
+        course_data = course_info.dict()
+        course_data["course_owner_id"] = user_id
+        new_course = Course(**course_data)
+        return await engine.save(new_course)
 
     @staticmethod
-    async def get_course():
-        db = get_db()
-        result = await db.find(Course)
-        return result
+    async def get_courses():
+        courses = await engine.find(Course)
+        return courses
 
     @staticmethod
     async def get_course_by_id(course_id):
-        db = get_db()
-        course = await db.find_one(Course, Course.ObjectId == course_id)
+        try:
+            course_obj_id = ObjectId(course_id)
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid course ID format")
+        course = await engine.find_one(Course, Course.id == ObjectId(course_id))
         if not course:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="course not found")
         return course
 
     @staticmethod
     async def update_course(course_id, data):
-        db = get_db()
-        course = await db.find_one(Course, Course.ObjectId == course_id)
+        try:
+            course_obj_id = ObjectId(course_id)
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid course ID format")
+        course = await engine.find_one(Course, Course.id == course_obj_id)
         if not course:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="course not found")
-        course_update = CourseUpdateForm(**data)
-        updated = await db.model_update(course_update)
-        return await db.save(updated)
+        course_data = data.dict(exclude_unset=True)
+        for field, value in course_data.items():
+            setattr(course, field, value)
+
+        # Save the updated user directly
+        updated_user = await engine.save(course)
+
+        return await engine.save(updated_user)
 
     @staticmethod
     async def update_course_status(course_id, course_status):
-        db = get_db()
-        course = await db.find_one(Course, Course.ObjectId == course_id)
+        if course_status not in [CourseStatus.normal.name, CourseStatus.suspended.name, CourseStatus.withdrawn.name]:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid course status")
+        try:
+            course_obj_id = ObjectId(course_id)
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid course ID format")
+        course = await engine.find_one(Course, Course.id == course_obj_id)
         if not course:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="course not found")
-        course.status = course_status
-        return await db.save(course)
+        course.course_status = course_status
+        return await engine.save(course)
 
     @staticmethod
     async def delete_course(course_id):
-        db = get_db()
-        course = await db.find_one(Course, Course.ObjectId == course_id)
+        try:
+            course_obj_id = ObjectId(course_id)
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid course ID format")
+        course = await engine.find_one(Course, Course.id == course_obj_id)
         if not course:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="course not found")
-        db.delete(course)
+        await engine.delete(course)
 
 
 

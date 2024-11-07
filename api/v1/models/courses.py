@@ -1,21 +1,23 @@
-import datetime
-from odmantic import Field, Model, Reference
+from bson import ObjectId
+
+from datetime import datetime
+from typing import Optional, ClassVar
+from odmantic import Model, Reference, Field
+from pydantic import EmailStr, HttpUrl, ConfigDict
 
 from .user import User
-from .enums import Status
+from .enums import CourseStatus
 
 
 class Course(Model):
     course_title: str
     course_code: str
     course_description: str
-    course_status = Field(default=Status.normal.name)
-    course_owner_id: User = Reference()
-    createdAt: datetime = Field(default_factory=datetime.datetime.utcnow)
+    course_status: str = Field(default=CourseStatus.normal.name)
+    course_owner_id: ObjectId
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
 
-    model_config = {
-        "collection": "courses"
-    }
+    model_config: ClassVar[ConfigDict] = ConfigDict(collection="courses")
 
 
 class Enrollment(Model):

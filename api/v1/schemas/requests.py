@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, HttpUrl
 from typing import Optional
 
-from ..models.user import User, Education, Event
+from ..models.user import User, Education
 from ..models.courses import Course
 
 
@@ -56,16 +56,27 @@ from ..models.courses import Course
 #
 
 
-class UserIn(BaseModel):
+class UserCreateSchema(BaseModel):
     email: EmailStr
     password: str
     phoneNumber: str
+    role: str
     firstName: str
     lastName: str
-    photo: Optional[HttpUrl] = None
-    dateOfBirth: Optional[str] = None
-    placeOfBirth: Optional[str] = None
-    education: Education
+    dateOfBirth: str
+    placeOfBirth: str
+    education: Optional[dict] = None
+    parentFirstName: Optional[str] = None
+    parentLastName: Optional[str] = None
+    parentEmail: Optional[EmailStr] = None
+    parentAddress: Optional[str] = None
+    parentPhone: Optional[str] = None
+    address: Optional[str] = None
+    about: Optional[str] = None
+    expertise: Optional[str] = None
+
+    class Config:
+        arbitrary_types_allowed = True  # Allow arbitrary types
 
 
 class StudentUpdateFormIn(BaseModel):
@@ -99,3 +110,9 @@ class CreateCourseIn(BaseModel):
     course_code: str
     course_description: str
     course_owner_id: int
+
+
+class LoginForm(BaseModel):
+    password: str
+    email: EmailStr
+

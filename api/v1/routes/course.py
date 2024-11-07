@@ -1,43 +1,35 @@
 from fastapi import APIRouter, status, Depends, Request
-
 from ..controllers.course import CourseManager
-from ..utils.utils import is_admin, is_lecturer, is_student
+from ..utils.utils import is_admin_or_lecturer, oauth2_schema
 from ..schemas.requests import CreateCourseIn, CourseUpdateForm
 
 
-router = APIRouter(prefix="api/courses", tags=["Courses"])
+router = APIRouter(prefix="/api/courses", tags=["Courses"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED,
-             dependencies=[Depends(is_lecturer), Depends(is_admin)])
-async def create_course(course_data: CreateCourseIn, request: Request):
-    creator_id = request.state.user
-    course_created = await CourseManager.create_course(course_data, creator_id)
-    return course_created
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def create_course(course_data: CreateCourseIn, user=Depends(oauth2_schema)):
+    return await CourseManager.create_course(course_data, user.id)
 
 
-@router.get("/", status_code=status.HTTP_200_OK, dependencies=[Depends(is_admin), Depends(is_lecturer)])
-async def get_courses():
-    courses = await CourseManager.get_course()
-    return courses
+@router.get("/", status_code=status.HTTP_200_OK)
+async def get_courses(user=Depends(oauth2_schema)):
+    return await CourseManager.get_courses()
 
 
 @router.get("/{id}", status_code=status.HTTP_302_FOUND)
-async def get_course(id_: str):
-    course = await CourseManager.get_course_by_id(id_)
-    return course
+async def get_course(id_: str, user=Depends(oauth2_schema)):
+    return await CourseManager.get_course_by_id(id_)
 
 
 @router.patch("/{id}", status_code=status.HTTP_200_OK)
-async def update_course(id_: str, course_data: CourseUpdateForm):
-    course = await CourseManager.update_course(id_, course_data)
-    return course
+async def update_course(id_: str, course_data: CourseUpdateForm, user=Depends(oauth2_schema)):
+    return await CourseManager.update_course(id_, course_data)
 
 
 @router.patch("/{id}/status", status_code=status.HTTP_201_CREATED)
-async def update_course_status(id_: str, course_status: str):
-    course = await CourseManager.update_course_status(id_, course_status)
-    return course
+async def update_course_status(id_: str, course_status: str, user=Depends(oauth2_schema)):
+    return await CourseManager.update_course_status(id_, course_status)
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
