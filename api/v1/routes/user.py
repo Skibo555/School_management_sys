@@ -36,12 +36,12 @@ async def delete_user(user_id: str, user=Depends(oauth2_schema), role=Depends(is
     await UserManager.delete_user(user_id)
 
 
-@router.patch("/{user_id}/status", status_code=status.HTTP_200_OK, response_model=UserOut)
+@router.patch("/{user_id}/position", status_code=status.HTTP_200_OK, response_model=UserOut)
 async def change_user_status(user_id: str, user_status, user=Depends(oauth2_schema), role=Depends(is_admin)):
     return await UserManager.change_user_status(user_id, user_status)
 
 
-@router.post("/change-password")
+@router.post("/change_password")
 async def request_reset_password(email: PasswordResetEmailIn, user=Depends(oauth2_schema)):
     user_email = email.email
     message = await UserManager.request_reset_password(user_email, user)

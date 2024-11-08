@@ -15,7 +15,6 @@ async def register(request: UserCreateSchema, eduction_data: Education, role=Dep
     password = request.password
     request.education = eduction_data
     user_data = request
-    print(user_data)
     await UserManager.register_user(user_data)
     new_user_data = {
         "password": password,

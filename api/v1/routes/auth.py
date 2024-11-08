@@ -12,7 +12,6 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 async def register(request: UserCreateSchema, eduction_data: Education):
     request.education = eduction_data
     user_data = request
-    print(user_data)
     access_token = await UserManager.register_user(user_data)
     return {
         "access_token": access_token
