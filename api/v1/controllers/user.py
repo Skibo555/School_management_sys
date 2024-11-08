@@ -1,12 +1,16 @@
 from bson import ObjectId
 
-from fastapi import HTTPException, status
+from decouple import config
+from fastapi import HTTPException, status, Request
 from passlib.context import CryptContext
 
 from ..database.database import engine
 from ..models.user import User
 from ..models.enums import Roles, StudentStatus
 from .auth import AuthManager
+from ..services.send_email import send_email
+from ..utils.utils import create_reset_password_token, verify_reset_link
+from ..schemas.requests import PasswordResetEmailIn
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -31,10 +35,6 @@ class UserManager:
         if not pwd_context.verify(user_info.password, check_user.password):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password or email.")
         return AuthManager.encode_token(check_user)
-
-    @staticmethod
-    async def create_user(user_data):
-        pass
 
     @staticmethod
     async def get_users():
@@ -116,6 +116,35 @@ class UserManager:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         user.status = user_status
         return await engine.save(user)
+
+    @staticmethod
+    async def request_reset_password(email, user):
+        check_user = await engine.find_one(User, User.email == email)
+        if not check_user:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not found")
+        token = create_reset_password_token(user)
+        forget_password_url = f"{config('BASE_URL')}:{config('PORT')}/api/user/reset-password?token={token}"
+        message = (f"Hi {user.firstName}!\nYou requested to change your password fon our website\nPlease click this"
+                   f"the link below to reset your password\n\nLink {forget_password_url}\nPlease note that this link"
+                   f"will expire in the next 30 minutes.")
+        send_email(subject="Reset Password Link From Jodna", recipient=user.email, body=message)
+        return "A link has been sent to your email, follow the link to reset your password"
+
+    @staticmethod
+    async def reset_password(token, password):
+        password_data = password.dict()
+        if password_data["new_password"] != password_data["confirm_password"]:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                detail="Your new_password and confirm_password must match")
+        user_email = verify_reset_link(token)
+        user = await engine.find_one(User, User.email == user_email)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
+        hashed_password = pwd_context.hash(password_data["new_password"])
+        user.password = hashed_password
+        await engine.save(user)
+        message = "You have successfully changed your password"
+        return message
 
     # @staticmethod
     # async def delete_all_users():

@@ -116,3 +116,11 @@ class LoginForm(BaseModel):
     password: str
     email: EmailStr
 
+
+class PasswordResetEmailIn(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetIn(BaseModel):
+    new_password: str
+    confirm_password: str

@@ -4,7 +4,7 @@ from typing import List
 from ..schemas.response import UserOut
 from ..utils.utils import oauth2_schema, is_admin_or_lecturer, is_admin
 from ..controllers.user import UserManager
-from ..schemas.requests import UserUpdateForm
+from ..schemas.requests import UserUpdateForm, PasswordResetEmailIn, PasswordResetIn
 
 router = APIRouter(prefix='/api/user', tags=["Users"])
 
@@ -39,6 +39,19 @@ async def delete_user(user_id: str, user=Depends(oauth2_schema), role=Depends(is
 @router.patch("/{user_id}/status", status_code=status.HTTP_200_OK, response_model=UserOut)
 async def change_user_status(user_id: str, user_status, user=Depends(oauth2_schema), role=Depends(is_admin)):
     return await UserManager.change_user_status(user_id, user_status)
+
+
+@router.post("/change-password")
+async def request_reset_password(email: PasswordResetEmailIn, user=Depends(oauth2_schema)):
+    user_email = email.email
+    message = await UserManager.request_reset_password(user_email, user)
+    return message
+
+
+@router.post("/reset-password/{token}")
+async def reset_password(password: PasswordResetIn, token: str):
+    print(token)
+    return await UserManager.reset_password(token, password)
 
 
 # @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)

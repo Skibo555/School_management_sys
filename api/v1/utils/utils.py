@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 from bson import ObjectId
 
@@ -70,8 +71,6 @@ def verify_password_hash(password: str, hashed_pass: str) -> bool:
 async def is_admin_or_lecturer(user=Depends(oauth2_schema)):
     # Check if the logged-in user's role is either admin or lecturer
     if user.role not in {Roles.admin.name, Roles.lecturer.name}:
-        print(user)
-        print(user.role)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not allowed to perform this operation"
@@ -95,3 +94,35 @@ def is_admin(user=Depends(oauth2_schema)):
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             detail="You are not allowed to perform this operation as an admin")
 
+
+def create_reset_password_token(user):
+    try:
+        print(user.email)
+        data = {
+            "user_email": user.email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }
+        encode_url = jwt.encode(payload=data, key=JWT_SECRET_KEY, algorithm=ALGORITHM)
+        return encode_url
+    except Exception as Ex:
+        raise Ex
+
+
+def verify_reset_link(token):
+    try:
+        data = jwt.decode(token, key=JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        user_email = data["user_email"]
+        exp_timestamp = data["exp"]
+
+        if exp_timestamp:
+            expiration_time = datetime.datetime.fromtimestamp(exp_timestamp)
+            current_time = datetime.datetime.utcnow()
+            if current_time > expiration_time:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token expired")
+            return user_email
+    except jwt.InvalidSignatureError:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid signature")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Expired signature")
+    except jwt.InvalidTokenError as ex:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=f"{ex}")
