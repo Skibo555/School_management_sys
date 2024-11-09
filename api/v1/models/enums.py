@@ -10,10 +10,10 @@ class Roles(Enum):
 
 
 class Level(Enum):
-    level1 = 100
-    level2 = 200
-    level3 = 300
-    level4 = 400
+    level1 = "100"
+    level2 = "200"
+    level3 = "300"
+    level4 = "400"
 
 
 class CourseStatus(Enum):
@@ -25,3 +25,18 @@ class CourseStatus(Enum):
 class StudentStatus(Enum):
     active = "active"
     inactive = "inactive"
+
+
+class PositionHeld(Enum):
+    member = "member"
+    course_rep = "course rep"
+    supervisor = "supervisor"
+    counsellor = "counsellor"
+
+
+class EventStatus(Enum):
+    pending = "pending"
+    suspended = "suspended"
+    approved = "approved"
+    ongoing = "ongoing"
+

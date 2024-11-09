@@ -23,10 +23,9 @@ class StaffManager:
         new_user = await engine.save(user_info)
         return AuthManager.encode_token(new_user)
 
-
     @staticmethod
     async def get_staffs():
-        record = await engine.find(User, )
+        record = await engine.find(User)
         return record
 
     @staticmethod

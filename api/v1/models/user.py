@@ -1,9 +1,17 @@
 from datetime import datetime
+from datetime import date
 from typing import Optional, ClassVar
-from odmantic import Model, Reference, Field
-from pydantic import EmailStr, HttpUrl, ConfigDict
 
-from .enums import StudentStatus, Roles
+from bson import ObjectId
+from odmantic import Model, Reference, Field, EmbeddedModel
+from pydantic import EmailStr, HttpUrl, ConfigDict, validator, ValidationError
+
+from .enums import (
+    StudentStatus,
+    Roles,
+    PositionHeld,
+    Level,
+    EventStatus)
 
 
 class Education(Model):
@@ -13,20 +21,21 @@ class Education(Model):
     endDate: str
     city: str
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(collection="education")
+    model_config: ClassVar[ConfigDict] = ConfigDict({"collection": "education", "arbitrary_types_allowed": True})
 
 
 class User(Model):
     email: EmailStr = Field(unique=True)
     password: str
     phoneNumber: str
-    # idNumber: str
-    role: str = Field(default=Roles.student.name)
-
+    idNumber: str
+    # role: str = Field(default=Roles.student.name)
+    isAdmin: bool = Field(default=False)
+    isStudent: bool = Field(default=True)
     firstName: str
     lastName: str
     photo: Optional[HttpUrl] = None
-    dateOfBirth: str
+    dateOfBirth: date
     placeOfBirth: str
 
     education: Education = Reference()
@@ -41,81 +50,38 @@ class User(Model):
     parentAddress: Optional[str] = None
     parentPhone: Optional[str] = None
 
-    address: Optional[str] = None
-    about: Optional[str] = None
-    expertise: Optional[str] = None
+    address: str
+    about: str
+    expertise: str
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(collection="users")
+    @validator("dateOfBirth")
+    def validate_date_of_birth(cls, dob):
+        if dob.year < 1960:
+            raise ValueError("Year of birth cannot be earlier than 1960")
+        return dob
+
+    model_config: ClassVar[ConfigDict] = ConfigDict({"collection": "users", "arbitrary_types_allowed": True})
 
 
-class Position(Model):
-    user: User = Reference()
-    class_: str
-    role: str
+class Position(EmbeddedModel):
+    user_id: ObjectId
+    class_: Field(default=Level.level1.name)
+    role: Field(default=PositionHeld.member.name)
     course: str
 
+    model_config: ClassVar[ConfigDict] = ConfigDict({"collection": "positions", "arbitrary_types_allowed": True})
 
-# class Event(Model):
-#     date: str
-#     title: str
-#     course: Optional[str] = None
-#     class_: Optional[str] = None
-#     startTime: int
-#     endTime: int
-#     status: Field(default=Status.normal.name)
 
-# from sqlalchemy import String, Enum, TIMESTAMP, BOOLEAN, Date, Integer, ForeignKey, Text
-# from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-# from sqlalchemy.sql import func
-#
-# from .enums import Roles, Level
-#
-#
-# class Base(DeclarativeBase):
-#     pass
-#
-#
-# class Student(Base):
-#     __tablename__ = "students"
-#     id_: Mapped[int] = mapped_column(Integer, primary_key=True)
-#     email: Mapped[str] = mapped_column(unique=True, nullable=False)
-#     first_name: Mapped[str] = mapped_column(String(30), nullable=False)
-#     last_name: Mapped[str] = mapped_column(String(30), nullable=False)
-#     middle_name: Mapped[Optional[str]] = mapped_column(String(30))
-#     password: Mapped[str] = mapped_column(String(50), nullable=False)
-#     role: Mapped[str] = mapped_column(type_=Enum, default=Roles.student.student)
-#     birthday: Mapped[str] = mapped_column(Date)
-#     department: Mapped[str] = mapped_column(String(100))
-#     joined_at: Mapped[str] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
-#     updated_at: Mapped[str] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
-#     is_deleted: Mapped[str] = mapped_column(BOOLEAN, default=False)
-#     level: Mapped[str] = mapped_column(Enum, default=Level.jss1.jss1)
-#     admission_number: Mapped[str] = mapped_column()
-#
-#     # Relationship to the StudentCourses association table.
-#     course: Mapped[str] = relationship("StudentCourse", back_populates='student')
-#
-#     def __repr__(self) -> str:
-#         return f"User(id={self.id_!r}, name={self.first_name!r}, fullname={self.last_name!r})"
-#
-#
-# class Staff(Base):
-#     __tablename__ = "staffs"
-#     id_: Mapped[int] = mapped_column(Integer, primary_key=True)
-#     email: Mapped[str] = mapped_column(unique=True, nullable=False)
-#     first_name: Mapped[str] = mapped_column(String(30), nullable=False)
-#     last_name: Mapped[str] = mapped_column(String(30), nullable=False)
-#     middle_name: Mapped[Optional[str]] = mapped_column(String(30))
-#     password: Mapped[str] = mapped_column(String(50), nullable=False)
-#     role: Mapped[str] = mapped_column(type_=Enum, default=Roles.student.student)
-#     birthday: Mapped[str] = mapped_column(Date)
-#     department: Mapped[str] = mapped_column(String(100))
-#     joined_at: Mapped[str] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
-#     updated_at: Mapped[str] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
-#     is_deleted: Mapped[str] = mapped_column(BOOLEAN, default=False)
-#
-#     # relationship to the courses table
-#     course_title: Mapped[str] = relationship("Course", back_populates="course_title")
-#
-#     def __repr__(self) -> str:
-#         return f"User(id={self.id_!r}, name={self.first_name!r}, fullname={self.last_name!r})"
+class Event(Model):
+    date: str
+    title: str
+    course: Optional[str] = None
+    class_: Optional[str] = None
+    startTime: int
+    endTime: int
+    status: Field(default=EventStatus.pending.name)
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    creatorId: User = Reference()
+
+    model_config: ClassVar[ConfigDict] = ConfigDict({"collection": "events", "arbitrary_types_allowed": True})
+

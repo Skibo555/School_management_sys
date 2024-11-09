@@ -70,7 +70,7 @@ def verify_password_hash(password: str, hashed_pass: str) -> bool:
 
 async def is_admin_or_lecturer(user=Depends(oauth2_schema)):
     # Check if the logged-in user's role is either admin or lecturer
-    if user.role not in {Roles.admin.name, Roles.lecturer.name}:
+    if not user.isAdmin == True:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not allowed to perform this operation"
@@ -78,28 +78,27 @@ async def is_admin_or_lecturer(user=Depends(oauth2_schema)):
 
 
 def is_student(user=Depends(oauth2_schema)):
-    if not user.role == Roles.student.name:
+    if not user.isStudent == True:
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             detail="You are not allowed to perform this operation as a student")
 
 
-def is_lecturer(user=Depends(oauth2_schema)):
-    if not user.role == Roles.lecturer.name:
-        raise HTTPException(status.HTTP_403_FORBIDDEN,
-                            detail="You are not allowed to perform this operation as a lecturer")
+# def is_lecturer(user=Depends(oauth2_schema)):
+#     if not user.isAdmin == True:
+#         raise HTTPException(status.HTTP_403_FORBIDDEN,
+#                             detail="You are not allowed to perform this operation as a lecturer")
 
 
 def is_admin(user=Depends(oauth2_schema)):
-    if not user.role == Roles.admin.name:
+    if not user.isAdmin == True:
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             detail="You are not allowed to perform this operation as an admin")
 
 
-def create_reset_password_token(user):
+def create_reset_password_token(email):
     try:
-        print(user.email)
         data = {
-            "user_email": user.email,
+            "user_email": email,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
         }
         encode_url = jwt.encode(payload=data, key=JWT_SECRET_KEY, algorithm=ALGORITHM)

@@ -29,7 +29,7 @@ class CourseManager:
             course_obj_id = ObjectId(course_id)
         except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid course ID format")
-        course = await engine.find_one(Course, Course.id == ObjectId(course_id))
+        course = await engine.find_one(Course, Course.id == course_obj_id)
         if not course:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="course not found")
         return course
@@ -50,7 +50,7 @@ class CourseManager:
         # Save the updated user directly
         updated_user = await engine.save(course)
 
-        return await engine.save(updated_user)
+        return updated_user
 
     @staticmethod
     async def update_course_status(course_id, course_status):
@@ -76,7 +76,3 @@ class CourseManager:
         if not course:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="course not found")
         await engine.delete(course)
-
-
-
-

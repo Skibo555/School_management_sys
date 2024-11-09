@@ -1,8 +1,11 @@
+import datetime
+
 from pydantic import BaseModel, EmailStr, HttpUrl
 from typing import Optional
 
-from ..models.user import User, Education
-from ..models.courses import Course
+from pydantic.v1 import validator
+
+from ..models.enums import StudentStatus
 
 
 # from .base import Base
@@ -60,20 +63,36 @@ class UserCreateSchema(BaseModel):
     email: EmailStr
     password: str
     phoneNumber: str
-    role: str
+    idNumber: str
+    isAdmin: Optional[bool] = False
+    isStudent: Optional[bool] = True
     firstName: str
     lastName: str
-    dateOfBirth: str
+    photo: Optional[HttpUrl] = None
+    dateOfBirth: datetime.date
     placeOfBirth: str
-    education: Optional[dict] = None
+
+    # education: Optional[dict] = None
+
+    status: StudentStatus = Optional[StudentStatus.active.name]
+    createdAt: datetime
+
+    # Guardian information
     parentFirstName: Optional[str] = None
     parentLastName: Optional[str] = None
     parentEmail: Optional[EmailStr] = None
     parentAddress: Optional[str] = None
     parentPhone: Optional[str] = None
-    address: Optional[str] = None
-    about: Optional[str] = None
-    expertise: Optional[str] = None
+
+    address: str
+    about: str
+    expertise: str
+
+    @validator("dateOfBirth")
+    def validate_date_of_birth(cls, dob):
+        if dob.year < 1960:
+            raise ValueError("Year of birth cannot be earlier than 1960")
+        return dob
 
     class Config:
         arbitrary_types_allowed = True  # Allow arbitrary types
@@ -86,11 +105,6 @@ class StudentUpdateFormIn(BaseModel):
 class StaffUpdateFormIn(BaseModel):
     firstName: str
     lastName: str
-
-
-class UserObjTokenIn(BaseModel):
-    ObjectId: str
-    role: str
 
 
 class CourseUpdateForm(BaseModel):
@@ -124,3 +138,9 @@ class PasswordResetEmailIn(BaseModel):
 class PasswordResetIn(BaseModel):
     new_password: str
     confirm_password: str
+
+
+class UpdateUserPosition(BaseModel):
+    class_: str
+    role: str
+    course: str
