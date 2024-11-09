@@ -34,13 +34,16 @@ class User(Model):
     isStudent: bool = Field(default=True)
     firstName: str
     lastName: str
-    photo: Optional[HttpUrl] = None
-    dateOfBirth: date
+    photo: str
+    # photo: Optional[HttpUrl] = None
+    # dateOfBirth: date
+    dateOfBirth: str
     placeOfBirth: str
 
     education: Education = Reference()
 
     status: str = Field(default=StudentStatus.active.name)
+    # createdAt: datetime = Field(default_factory=datetime.utcnow)
     createdAt: datetime = Field(default_factory=datetime.utcnow)
 
     # Guardian information
@@ -54,11 +57,11 @@ class User(Model):
     about: str
     expertise: str
 
-    @validator("dateOfBirth")
-    def validate_date_of_birth(cls, dob):
-        if dob.year < 1960:
-            raise ValueError("Year of birth cannot be earlier than 1960")
-        return dob
+    # @validator("dateOfBirth")
+    # def validate_date_of_birth(cls, dob):
+    #     if dob.year < 1960:
+    #         raise ValueError("Year of birth cannot be earlier than 1960")
+    #     return dob
 
     model_config: ClassVar[ConfigDict] = ConfigDict({"collection": "users", "arbitrary_types_allowed": True})
 

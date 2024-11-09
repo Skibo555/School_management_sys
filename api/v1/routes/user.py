@@ -38,11 +38,11 @@ async def delete_user(user_id: str, user=Depends(oauth2_schema), role=Depends(is
     await UserManager.delete_user(user_id)
 
 
-@router.patch("/{user_id}/position", status_code=status.HTTP_200_OK)
+@router.patch("/{user_id}/status", status_code=status.HTTP_200_OK)
 async def change_user_status(user_id: str, user_status, user=Depends(oauth2_schema), role=Depends(is_admin)):
     return await UserManager.change_user_status(user_id, user_status)
 
 
-# @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
-# async def delete_all_users():
-#     return await UserManager.delete_all_users()
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_all_users():
+    return await UserManager.delete_all_users()

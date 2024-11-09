@@ -1,16 +1,14 @@
 from bson import ObjectId
-
 from decouple import config
-from fastapi import HTTPException, status, Request
+from fastapi import HTTPException, status
 from passlib.context import CryptContext
 
-from ..database.database import engine
-from ..models.user import User, Position
-from ..models.enums import Roles, StudentStatus, PositionHeld
 from .auth import AuthManager
+from ..database.database import engine
+from ..models.enums import Roles, StudentStatus
+from ..models.user import User
 from ..services.send_email import send_email
 from ..utils.utils import create_reset_password_token, verify_reset_link
-
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -23,8 +21,10 @@ class UserManager:
         check = await engine.find_one(User, User.email == user_info.email)
         if check:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Email already exists")
-        if user_info.role not in [Roles.student.name, Roles.admin.name, Roles.lecturer.name, Roles.supper_admin.name]:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can't assign such role")
+        # if user_info.isAdmin != True:
+        #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can't assign such role")
+        # if user_info.isstudent != Roles.admin.name:
+        #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can't assign such role")
         user_info = User(**user_info.dict())
         new_user = await engine.save(user_info)
         return AuthManager.encode_token(new_user)
@@ -33,9 +33,9 @@ class UserManager:
     async def login(user_info):
         check_user = await engine.find_one(User, User.email == user_info.email)
         if not check_user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password or email. User might not be in our record.")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password or email")
         if not pwd_context.verify(user_info.password, check_user.password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password or email. password issues")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password or email")
         return AuthManager.encode_token(check_user)
 
     @staticmethod
@@ -148,7 +148,7 @@ class UserManager:
         message = "You have successfully changed your password"
         return message
 
-    # @staticmethod
-    # async def delete_all_users():
-    #     users = await engine.find(User)
-    #     dele = [await engine.delete(user) for user in users]
+    @staticmethod
+    async def delete_all_users():
+        users = await engine.find(User)
+        dele = [await engine.delete(user) for user in users]

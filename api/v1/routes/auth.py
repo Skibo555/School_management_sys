@@ -9,8 +9,8 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register(request: UserCreateSchema, eduction: Education):
-    request.education = eduction
+async def register(request: UserCreateSchema):
+    # request.education = eduction
     user_data = request
     access_token = await UserManager.register_user(user_data)
     return {

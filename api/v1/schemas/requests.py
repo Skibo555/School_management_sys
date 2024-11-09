@@ -6,6 +6,7 @@ from typing import Optional
 from pydantic.v1 import validator
 
 from ..models.enums import StudentStatus
+from ..models.user import Education
 
 
 # from .base import Base
@@ -68,14 +69,15 @@ class UserCreateSchema(BaseModel):
     isStudent: Optional[bool] = True
     firstName: str
     lastName: str
-    photo: Optional[HttpUrl] = None
-    dateOfBirth: datetime.date
+    photo: str
+    # photo: Optional[HttpUrl] = None
+    # dateOfBirth: datetime.date
+    dateOfBirth: str
     placeOfBirth: str
 
-    # education: Optional[dict] = None
+    education: Education
 
     status: StudentStatus = Optional[StudentStatus.active.name]
-    createdAt: datetime
 
     # Guardian information
     parentFirstName: Optional[str] = None
