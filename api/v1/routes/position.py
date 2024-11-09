@@ -12,6 +12,6 @@ async def put_user_in_position(id_: str, position_data: UpdateUserPosition, role
     return await PositionManager.put_position(user_id=id_, position_data=position_data)
 
 
-@router.delete("/{id_}", status_code=status.HTTP_200_OK)
+@router.delete("/{id_}", status_code=status.HTTP_204_NO_CONTENT)
 async def strip_position(id_: str, role=Depends(is_admin_or_lecturer)):
-    return await PositionManager.strip_position(user_id=id_)
+    await PositionManager.strip_position(user_id=id_)

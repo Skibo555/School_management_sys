@@ -20,7 +20,11 @@ class PositionManager:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
         current_position = await engine.find_one(Position, Position.user_id == user_obj_id)
-
+        if not current_position:
+            position_user_id = user.id
+            create_position = Position(user_id=position_user_id, **position_data.dict())
+            save_position = await engine.save(create_position)
+            return save_position
         notice = []
         if current_position.class_ == position_data.class_:
             if current_position.course == position_data.course:
@@ -32,7 +36,7 @@ class PositionManager:
         position_user_id = user.id
 
         # Create the Position instance with the User instance
-        create_position = Position(user_id=position_user_id, **position_data)
+        create_position = Position(user_id=position_user_id, **position_data.dict())
         save_position = await engine.save(create_position)
         return {
             "position": save_position,

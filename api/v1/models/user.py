@@ -66,7 +66,7 @@ class User(Model):
     model_config: ClassVar[ConfigDict] = ConfigDict({"collection": "users", "arbitrary_types_allowed": True})
 
 
-class Position(EmbeddedModel):
+class Position(Model):
     user_id: ObjectId
     class_: Field(default=Level.level1.name)
     role: Field(default=PositionHeld.member.name)

@@ -45,7 +45,6 @@ class CustomHTTPBearer(HTTPBearer):
                 )
 
             setattr(request.state, 'user', user_data_from_db)
-            print("User role:", getattr(request.state.user, 'role', None))
 
             return user_data_from_db
 
