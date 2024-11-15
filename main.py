@@ -4,4 +4,4 @@ from decouple import config
 
 
 if __name__ == "__main__":
-    uvicorn.run("v1.app:app", host=config("HOST"), port=int(config("PORT")), reload=True)
+    uvicorn.run("api.v1.app:app", host=config("HOST"), port=int(config("PORT")), reload=True)
