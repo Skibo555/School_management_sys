@@ -35,7 +35,7 @@ git clone  https://github.com/Skibo555/School_management_sys.git
 ```
 2. cd into the project directory:
 ```bash 
-cd School_management_sys/api
+cd School_management_sys/
 ```
 3.  Install the dependencies:
 ```bash 
